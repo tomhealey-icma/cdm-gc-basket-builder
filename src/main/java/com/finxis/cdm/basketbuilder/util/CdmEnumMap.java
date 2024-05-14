@@ -29,6 +29,12 @@ public class CdmEnumMap {
             map.put("Repurchase Agreement", "REPURCHASE_AGREEMENT");
             map.put("Buy/Sell-Back Agreement", "BUY/SELL_BACK_AGREEMENT");
 
+            map.put("SovereignCentralBank","SOVEREIGN_CENTRAL_BANK");
+
+            map.put("Security","SECURITY");
+
+            map.put("Vanilla","VANILLA");
+
             return map;
         }
 }

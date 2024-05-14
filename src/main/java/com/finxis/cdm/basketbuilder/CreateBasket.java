@@ -18,6 +18,7 @@ import cdm.base.datetime.PeriodEnum;
 import cdm.base.datetime.PeriodRange;
 import cdm.base.math.QuantifierEnum;
 import cdm.base.staticdata.asset.common.*;
+import cdm.base.staticdata.asset.common.metafields.ReferenceWithMetaProductIdentifier;
 import cdm.base.staticdata.party.LegalEntity;
 import cdm.event.common.Instruction;
 import cdm.observable.asset.CreditNotation;
@@ -63,9 +64,24 @@ public class CreateBasket {
         map.buildEnumMap(bep.cdmMap);
 
         String currency = bep.collateralCriteriaCurrencyField.getSelectedItem().toString();
+        String basketName = bep.gcBasketNameField.getText().trim().trim();
+        String basketId = bep.gcBasketIdField.getText().trim().trim();
+        String issuerType = bep.issuerTypeField.getSelectedItem().toString();
+
+        List<ReferenceWithMetaProductIdentifier> productIdentifierList = List.of(
+                ReferenceWithMetaProductIdentifier.builder()
+                        .setValue(ProductIdentifier.builder()
+                            .setIdentifierValue(basketId)
+                        .build()),
+                ReferenceWithMetaProductIdentifier.builder()
+                        .setValue(ProductIdentifier.builder()
+                            .setIdentifierValue(basketName)
+                        .build()));
+
 
         Product gcBasket = Product.builder()
                 .setBasket(Basket.builder()
+                        .setProductIdentifier(productIdentifierList)
                         .setBasketConstituent(List.of(BasketConstituent.builder()
                                         .setSecurity(Security.builder()
                                                 .setEconomicTerms(EconomicTerms.builder()
@@ -88,15 +104,32 @@ public class CreateBasket {
         map.buildEnumMap(bep.cdmMap);
 
         String currency = bep.collateralCriteriaCurrencyField.getSelectedItem().toString();
+        String issuerType = bep.cdmMap.get(bep.issuerTypeField.getSelectedItem().toString());
+        String securityType = bep.cdmMap.get(bep.collateralAssetTypeField.getSelectedItem().toString());
+        String debtType = bep.cdmMap.get(bep.debtTypeField.getSelectedItem().toString());
+        String assetRating = bep.collateralCriteriaAgencyRatingField.getSelectedItem().toString();
+        String country = bep.issuerCountryField.getSelectedItem().toString();
+        String issuerRating = bep.issuerAgencyRatingField.getSelectedItem().toString();
 
         EligibleCollateralSpecificationInstruction eligibleCollateralSpecificationInstruction = EligibleCollateralSpecificationInstruction.builder()
                 .setCommon(EligibleCollateralCriteria.builder()
+                        .setIssuer(List.of(IssuerCriteria.builder()
+                                        .setIssuerType(List.of(CollateralIssuerType.builder()
+                                            .setIssuerType(IssuerTypeEnum.valueOf(issuerType))))
+                                        .addIssuerCountryOfOrigin(ISOCountryCodeEnum.valueOf(country))
+                                        .addIssuerAgencyRating(AgencyRatingCriteria.builder()
+                                            .setReferenceAgency(CreditRatingAgencyEnum.FITCH)
+                                                .setQualifier(QuantifierEnum.ANY)
+                                                .setCreditNotation(List.of(CreditNotation.builder()
+                                                        .setNotation(FieldWithMetaString.builder()
+                                                                .setValue(issuerRating)))))))
+
                         .setAsset(List.of(AssetCriteria.builder()
                                 .setDenominatedCurrency(List.of(CurrencyCodeEnum.valueOf(currency)))
                                 .setCollateralAssetType(List.of(AssetType.builder()
-                                        .setAssetType(AssetTypeEnum.SECURITY)
+                                        .setAssetType(AssetTypeEnum.valueOf(securityType))
                                         .setDebtType(DebtType.builder()
-                                                .setDebtClass(DebtClassEnum.VANILLA))))
+                                                .setDebtClass(DebtClassEnum.valueOf(debtType)))))
                                 .setMaturityRange(PeriodRange.builder()
                                         .setLowerBound(PeriodBound.builder()
                                                 .setPeriod(Period.builder()
@@ -111,15 +144,15 @@ public class CreateBasket {
                                         .setQualifier(QuantifierEnum.ANY)
                                         .setCreditNotation(List.of(CreditNotation.builder()
                                                 .setNotation(FieldWithMetaString.builder()
-                                                        .setValue("AAA")))))
+                                                        .setValue(assetRating)))))
                         )))
                 .setVariable(List.of(EligibleCollateralCriteria.builder()
                         .setAsset(List.of(AssetCriteria.builder()
                                 .setDenominatedCurrency(List.of(CurrencyCodeEnum.valueOf(currency)))
                                 .setCollateralAssetType(List.of(AssetType.builder()
-                                        .setAssetType(AssetTypeEnum.SECURITY)
+                                        .setAssetType(AssetTypeEnum.valueOf(securityType))
                                         .setDebtType(DebtType.builder()
-                                                .setDebtClass(DebtClassEnum.VANILLA))))
+                                                .setDebtClass(DebtClassEnum.valueOf(debtType )))))
                                 .setMaturityRange(PeriodRange.builder()
                                         .setLowerBound(PeriodBound.builder()
                                                 .setPeriod(Period.builder()
@@ -134,7 +167,7 @@ public class CreateBasket {
                                         .setQualifier(QuantifierEnum.ANY)
                                         .setCreditNotation(List.of(CreditNotation.builder()
                                                 .setNotation(FieldWithMetaString.builder()
-                                                        .setValue("AAA")))))
+                                                        .setValue(assetRating)))))
                         ))))
                 .build();
 
@@ -153,6 +186,8 @@ public class CreateBasket {
 
     public EligibilityQuery createEligibilityQuery(BasketEntryPanel bep) throws IOException {
 
+        String assetRating = bep.collateralCriteriaAgencyRatingField.getSelectedItem().toString();
+
         EligibilityQuery eligibilityQuery = EligibilityQuery.builder()
                 .setMaturity(BigDecimal.valueOf(10.0))
                 .setCollateralAssetType(AssetType.builder()
@@ -164,7 +199,7 @@ public class CreateBasket {
                 .setAgencyRating(AgencyRatingCriteria.builder()
                         .setCreditNotation(List.of(CreditNotation.builder()
                                 .setNotation(FieldWithMetaString.builder()
-                                        .setValue("AAA"))))
+                                        .setValue(assetRating))))
                         .setQualifier(QuantifierEnum.ANY))
                 .setIssuerType(CollateralIssuerType.builder()
                         .setIssuerType(IssuerTypeEnum.SOVEREIGN_CENTRAL_BANK))

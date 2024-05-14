@@ -177,6 +177,10 @@ public class BasketEntryPanel extends JPanel {
 
     public JComboBox collateralMaturityTypeField;
 
+    public JTextField gcBasketNameField;
+
+    public JTextField gcBasketIdField;
+
     public JComboBox issuerTypeField;
 
     public JComboBox issuerCountryField;
@@ -293,12 +297,41 @@ public class BasketEntryPanel extends JPanel {
 
         IcmaRepoUtil ru = new IcmaRepoUtil();
 
+
+        //GC Basket Name
+        JPanel gcBasketNamePanel = new JPanel(new GridBagLayout());
+        JLabel gcBasketNameLabel = new JLabel("Basket Name", JLabel.LEFT);
+        gcBasketNameLabel.setPreferredSize(new Dimension(labelWidth, labelHeight));
+        gcBasketNameField = new JTextField();
+        gcBasketNameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        gcBasketNameField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
+        gcBasketNameField.setText("");
+
+        gcBasketNamePanel.add(gcBasketNameLabel);
+        gcBasketNamePanel.add(gcBasketNameField);
+        basketPanelCol1.add(gcBasketNamePanel);
+
+        //GC Basket ID
+        JPanel gcBasketIdPanel = new JPanel(new GridBagLayout());
+        JLabel gcBasketIdLabel = new JLabel("GC Basket ID", JLabel.LEFT);
+        gcBasketIdLabel.setPreferredSize(new Dimension(labelWidth, labelHeight));
+        gcBasketIdField = new JTextField();
+        gcBasketIdField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        gcBasketIdField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
+
+        gcBasketIdPanel.add(gcBasketIdLabel);
+        gcBasketIdPanel.add(gcBasketIdField);
+        basketPanelCol1.add(gcBasketIdPanel);
+
+
         //Issuer Criteria
         JPanel collateralIssuerPanel = new JPanel(new GridBagLayout());
         JLabel collateralIssuerLabel = new JLabel("Issuer Criteria:", JLabel.LEFT);
         collateralIssuerLabel.setPreferredSize(new Dimension(320, labelHeight));
         collateralIssuerPanel.add(collateralIssuerLabel);
         basketPanelCol1.add(collateralIssuerPanel);
+
+
 
         //Issuer Type Criteria
         JPanel issuerTypePanel = new JPanel(new GridBagLayout());
@@ -329,7 +362,7 @@ public class BasketEntryPanel extends JPanel {
         issuerCountryField = new JComboBox();
         issuerCountryField.addItem(new CItem("", ""));
         issuerCountryField.addItem(new CItem("UK", "UK"));
-        issuerCountryField.addItem(new CItem("XS", "XS"));
+        issuerCountryField.addItem(new CItem("DE", "DE"));
 
         issuerCountryField.setAlignmentX(Component.LEFT_ALIGNMENT);
         issuerCountryField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
@@ -355,12 +388,21 @@ public class BasketEntryPanel extends JPanel {
         issuerAgencyRatingPanel.add(issuerAgencyRatingField);
         basketPanelCol1.add(issuerAgencyRatingPanel);
 
+        JPanel issuerFillerPanel = new JPanel(new GridBagLayout());
+        //issuerFillerPanel.setBorder(blueline);;
+        issuerFillerPanel.setPreferredSize(new Dimension(fieldWidth, 100));
+        GridBagConstraints gc2 = new GridBagConstraints();
+        gc2.fill = GridBagConstraints.BOTH;
+        //gc2.weightx = 90;
+        //gc2.weighty = 90;
+        basketPanelCol1.add(issuerFillerPanel,gc2);
+
         //Collateral Criteria
         JPanel assetCriteriaPanel = new JPanel(new GridBagLayout());
         JLabel assetCriteriaLabel = new JLabel("Asset Criteria:", JLabel.LEFT);
         assetCriteriaLabel.setPreferredSize(new Dimension(320, labelHeight));
         assetCriteriaPanel.add(assetCriteriaLabel);
-        basketPanelCol1.add(assetCriteriaPanel);
+        basketPanelCol2.add(assetCriteriaPanel);
 
 
         //Maturity Criteria
@@ -374,7 +416,7 @@ public class BasketEntryPanel extends JPanel {
         collateralMaturityTypeField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
         collateralMaturityTypePanel.add(collateralMaturityTypeLabel);
         collateralMaturityTypePanel.add(collateralMaturityTypeField);
-        basketPanelCol1.add(collateralMaturityTypePanel);
+        basketPanelCol2.add(collateralMaturityTypePanel);
 
         //AssetType
         JPanel assetTypeOptionPanel = new JPanel(new GridBagLayout());
@@ -391,7 +433,7 @@ public class BasketEntryPanel extends JPanel {
         collateralAssetTypeField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
         assetTypeOptionPanel.add(assetTypeOptionLabel);
         assetTypeOptionPanel.add(collateralAssetTypeField);
-        basketPanelCol1.add(assetTypeOptionPanel);
+        basketPanelCol2.add(assetTypeOptionPanel);
 
 
         //Debt Type
@@ -416,7 +458,7 @@ public class BasketEntryPanel extends JPanel {
         debtTypeField.setPreferredSize(new Dimension(fieldWidth, fieldHeight));
         debtTypeOptionPanel.add(debtTypeOptionLabel);
         debtTypeOptionPanel.add(debtTypeField);
-        basketPanelCol1.add(debtTypeOptionPanel);
+        basketPanelCol2.add(debtTypeOptionPanel);
 
 
         //Interest Type

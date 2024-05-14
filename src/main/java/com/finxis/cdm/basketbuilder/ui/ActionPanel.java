@@ -1,9 +1,13 @@
 package com.finxis.cdm.basketbuilder.ui;
 
+import cdm.base.staticdata.asset.common.AssetType;
+import cdm.base.staticdata.asset.common.CurrencyCodeEnum;
 import cdm.product.collateral.CheckEligibilityResult;
 import cdm.product.collateral.EligibilityQuery;
 import cdm.product.collateral.EligibleCollateralCriteria;
 import cdm.product.collateral.EligibleCollateralSpecification;
+import cdm.product.collateral.functions.CheckAssetType;
+import cdm.product.collateral.functions.CheckDenominatedCurrency;
 import cdm.product.collateral.functions.CheckEligibilityByDetails;
 import cdm.product.collateral.functions.Create_EligibleCollateralSpecificationFromInstruction;
 import cdm.product.template.Product;
@@ -75,6 +79,7 @@ public class ActionPanel extends JPanel implements Observer {
 
     public EligibleCollateralSpecification eligibleCollateralSpecification = null;
 
+    public String publicSecurityQuery=null;
     public Product publicGcBasket = null;
 
     public ActionPanel(final ActionPanelModel actionPanelModel,
@@ -206,6 +211,15 @@ public class ActionPanel extends JPanel implements Observer {
                     LocalDateTime localDateTime = LocalDateTime.now();
                     String eventDateTime = localDateTime.format(eventDateFormat);
 
+                    //Boolean result = validateCollateral(publicSecurityQuery);
+                    Boolean result = validateAssetType(publicSecurityQuery);
+                    result = validateCurrency(publicSecurityQuery);
+                    if(result){
+                        JOptionPane.showMessageDialog(tep, "Valid", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                    }else {
+                        JOptionPane.showMessageDialog(tep, "Failed", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
                     ru.writeEventToFile("validate-basket-event", eventDateTime, businessEvent);
 
 
@@ -231,6 +245,7 @@ public class ActionPanel extends JPanel implements Observer {
                         String gcBasketJson = FileUtils.readFileToString(selectedFile, "UTF-8");
                         outputArea.setText(gcBasketJson);
                         System.out.println("GC Basket: " + gcBasketJson);
+                        loadGCBasket(gcBasketJson);
 
                     } catch (FileNotFoundException e) {
                         throw new RuntimeException(e);
@@ -252,10 +267,18 @@ public class ActionPanel extends JPanel implements Observer {
                 //This is where a real application would open the file.
                 try {
                     String securityQueryJson = FileUtils.readFileToString(selectedFile, "UTF-8");
+                    publicSecurityQuery = securityQueryJson;
                     outputArea.setText(securityQueryJson);
                     System.out.println("Security: " + securityQueryJson);
 
-                    Boolean result = validateCollateral(securityQueryJson);
+                    //Boolean result = validateCollateral(securityQueryJson);
+                    Boolean result = validateAssetType(publicSecurityQuery);
+                    result = validateCurrency(publicSecurityQuery);
+                    if(result){
+                        JOptionPane.showMessageDialog(tep, "Valid", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                    }else {
+                        JOptionPane.showMessageDialog(tep, "Failed", "Alert", JOptionPane.INFORMATION_MESSAGE);
+                    }
 
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
@@ -291,9 +314,115 @@ public class ActionPanel extends JPanel implements Observer {
         CheckEligibilityResult checkEligibilityResult = checkEligibilityByDetails.evaluate(this.eligibleCollateralSpecification, eligibilityQuery);
 
 
+        if (checkEligibilityResult.getIsEligible().booleanValue())
+            return true;
+        else
+            return false;
 
-        return true;
+    }
 
+    public Boolean validateAssetType(String securityQueryJson) throws IOException {
+
+
+        CreateBasket bt = new CreateBasket();
+        bt.createEligibilityQuery(tep);
+
+        Injector injector = Guice.createInjector(new CdmRuntimeModule());
+        ObjectMapper rosettaObjectMapper = RosettaObjectMapper.getNewRosettaObjectMapper();
+        EligibilityQuery eligibilityQueryObject = new EligibilityQuery.EligibilityQueryBuilderImpl();
+        EligibilityQuery eligibilityQuery = rosettaObjectMapper.readValue(securityQueryJson, eligibilityQueryObject.getClass());
+
+        //String icmarepoexecutionfuncinputJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(betest);
+
+        //EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
+
+
+        this.eligibleCollateralSpecification = bt.createEligibleCollateralSpecification(tep);
+
+        java.util.List<AssetType> assetTypes = (java.util.List<AssetType>) this.eligibleCollateralSpecification.getCriteria().get(0).getAsset().get(0).getCollateralAssetType();
+
+        CheckAssetType checkAssetType = new CheckAssetType.CheckAssetTypeDefault();
+        injector.injectMembers(checkAssetType);
+        Boolean result = checkAssetType.evaluate(assetTypes, eligibilityQuery);
+
+
+        if (result)
+            return true;
+        else
+            return false;
+
+    }
+
+    public Boolean validateCurrency(String securityQueryJson) throws IOException {
+
+
+        CreateBasket bt = new CreateBasket();
+        bt.createEligibilityQuery(tep);
+
+        Injector injector = Guice.createInjector(new CdmRuntimeModule());
+        ObjectMapper rosettaObjectMapper = RosettaObjectMapper.getNewRosettaObjectMapper();
+        EligibilityQuery eligibilityQueryObject = new EligibilityQuery.EligibilityQueryBuilderImpl();
+        EligibilityQuery eligibilityQuery = rosettaObjectMapper.readValue(securityQueryJson, eligibilityQueryObject.getClass());
+
+        //String icmarepoexecutionfuncinputJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(betest);
+
+        //EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
+
+
+        this.eligibleCollateralSpecification = bt.createEligibleCollateralSpecification(tep);
+
+        java.util.List<CurrencyCodeEnum> currencyCodes =  this.eligibleCollateralSpecification.getCriteria().get(0).getAsset().get(0).getDenominatedCurrency();
+
+        CheckDenominatedCurrency checkDenominatedCurrency = new CheckDenominatedCurrency.CheckDenominatedCurrencyDefault();
+        injector.injectMembers(checkDenominatedCurrency );
+        Boolean result = checkDenominatedCurrency.evaluate(currencyCodes, eligibilityQuery);
+
+
+        if (result)
+            return true;
+        else
+            return false;
+
+    }
+
+    public void loadGCBasket(String gcBasketJson) throws JsonProcessingException {
+
+        Injector injector = Guice.createInjector(new CdmRuntimeModule());
+        ObjectMapper rosettaObjectMapper = RosettaObjectMapper.getNewRosettaObjectMapper();
+        Product basketProductObj = new Product.ProductBuilderImpl();
+        Product  basketProduct = rosettaObjectMapper.readValue(gcBasketJson, basketProductObj.getClass());
+
+        tep.gcBasketIdField.setText(basketProduct.getBasket().getProductIdentifier().get(0).getValue().getIdentifier().getValue().trim().toString());
+        tep.gcBasketNameField.setText(basketProduct.getBasket().getProductIdentifier().get(1).getValue().getIdentifier().getValue().trim().toString());
+
+        String issuertype = basketProduct.getBasket().getBasketConstituent().get(0).getSecurity().getEconomicTerms().getCollateral().getCollateralProvisions().getEligibleCollateral().get(0).getIssuer().get(0).getIssuerType().get(0).getIssuerType().toString();
+        selectItemByString(tep.issuerTypeField, issuertype );
+        //tep.issuerTypeField.setSelectedIndex(1);
+
+        String issuerCountry = basketProduct.getBasket().getBasketConstituent().get(0).getSecurity().getEconomicTerms().getCollateral().getCollateralProvisions().getEligibleCollateral().get(0).getIssuer().get(0).getIssuerCountryOfOrigin().get(0).toDisplayString();
+        selectItemByString(tep.issuerCountryField, issuerCountry );
+        //tep.issuerCountryField.setSelectedIndex(2);
+
+        String issuerRating = basketProduct.getBasket().getBasketConstituent().get(0).getSecurity().getEconomicTerms().getCollateral().getCollateralProvisions().getEligibleCollateral().get(0).getIssuer().get(0).getIssuerAgencyRating().get(0).getCreditNotation().get(0).getNotation().getValue().trim().toString();
+        selectItemByString(tep.issuerAgencyRatingField, issuerRating);
+        //tep.issuerAgencyRatingField.setSelectedIndex(1);
+
+        String  collateralAssetType= basketProduct.getBasket().getBasketConstituent().get(0).getSecurity().getEconomicTerms().getCollateral().getCollateralProvisions().getEligibleCollateral().get(0).getAsset().get(0).getCollateralAssetType().get(0).getAssetType().toDisplayString();
+        selectItemByString(tep.collateralAssetTypeField, collateralAssetType);
+
+        String  collateralCurrency= basketProduct.getBasket().getBasketConstituent().get(0).getSecurity().getEconomicTerms().getCollateral().getCollateralProvisions().getEligibleCollateral().get(0).getAsset().get(0).getDenominatedCurrency().get(0).toDisplayString();
+        selectItemByString(tep.collateralCriteriaCurrencyField, collateralCurrency);
+
+    }
+
+    private static void selectItemByString(JComboBox cb, String s) {
+        for (int i=0; i<cb.getItemCount(); i++) {
+            if (cb.getItemAt(i).toString().equals(s)) {
+                cb.setSelectedIndex(i);
+                break;
+            }
+        }
+        return;
     }
 
     private class ActionActivator implements KeyListener, ItemListener {

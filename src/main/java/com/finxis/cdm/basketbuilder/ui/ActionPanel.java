@@ -219,7 +219,9 @@ public class ActionPanel extends JPanel implements Observer {
                     }else {
                         JOptionPane.showMessageDialog(tep, "Failed", "Alert", JOptionPane.INFORMATION_MESSAGE);
                     }
+                    String eligibilityQueryJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(publicSecurityQuery);
 
+                    ru.writeEventToFile("validate-eligibility-query", eventDateTime, publicSecurityQuery);
                     ru.writeEventToFile("validate-basket-event", eventDateTime, businessEvent);
 
 
@@ -247,6 +249,7 @@ public class ActionPanel extends JPanel implements Observer {
                         System.out.println("GC Basket: " + gcBasketJson);
                         loadGCBasket(gcBasketJson);
 
+
                     } catch (FileNotFoundException e) {
                         throw new RuntimeException(e);
                     } catch (IOException e) {
@@ -271,6 +274,9 @@ public class ActionPanel extends JPanel implements Observer {
                     outputArea.setText(securityQueryJson);
                     System.out.println("Security: " + securityQueryJson);
 
+                    String eligibilityQueryJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(publicSecurityQuery);
+
+
                     //Boolean result = validateCollateral(securityQueryJson);
                     Boolean result = validateAssetType(publicSecurityQuery);
                     result = validateCurrency(publicSecurityQuery);
@@ -279,6 +285,15 @@ public class ActionPanel extends JPanel implements Observer {
                     }else {
                         JOptionPane.showMessageDialog(tep, "Failed", "Alert", JOptionPane.INFORMATION_MESSAGE);
                     }
+
+                    IcmaRepoUtil ru = new IcmaRepoUtil();
+
+                    DateTimeFormatter eventDateFormat = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+                    LocalDateTime localDateTime = LocalDateTime.now();
+                    String eventDateTime = localDateTime.format(eventDateFormat);
+
+                    ru.writeEventToFile("load-security-eligibility-query", eventDateTime, publicSecurityQuery);
+
 
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
@@ -302,11 +317,9 @@ public class ActionPanel extends JPanel implements Observer {
         EligibilityQuery eligibilityQueryObject = new EligibilityQuery.EligibilityQueryBuilderImpl();
         EligibilityQuery eligibilityQuery = rosettaObjectMapper.readValue(securityQueryJson, eligibilityQueryObject.getClass());
 
-        //String icmarepoexecutionfuncinputJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(betest);
 
-        //EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
-
-
+        String eligibilityQueryJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(eligibilityQuery);
+        this.publicSecurityQuery = eligibilityQueryJson;
         this.eligibleCollateralSpecification = bt.createEligibleCollateralSpecification(tep);
 
         CheckEligibilityByDetails checkEligibilityByDetails = new CheckEligibilityByDetails.CheckEligibilityByDetailsDefault();
@@ -332,11 +345,9 @@ public class ActionPanel extends JPanel implements Observer {
         EligibilityQuery eligibilityQueryObject = new EligibilityQuery.EligibilityQueryBuilderImpl();
         EligibilityQuery eligibilityQuery = rosettaObjectMapper.readValue(securityQueryJson, eligibilityQueryObject.getClass());
 
-        //String icmarepoexecutionfuncinputJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(betest);
 
-        //EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
-
-
+        String eligibilityQueryJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(eligibilityQuery);
+        this.publicSecurityQuery = eligibilityQueryJson;
         this.eligibleCollateralSpecification = bt.createEligibleCollateralSpecification(tep);
 
         java.util.List<AssetType> assetTypes = (java.util.List<AssetType>) this.eligibleCollateralSpecification.getCriteria().get(0).getAsset().get(0).getCollateralAssetType();
@@ -364,11 +375,9 @@ public class ActionPanel extends JPanel implements Observer {
         EligibilityQuery eligibilityQueryObject = new EligibilityQuery.EligibilityQueryBuilderImpl();
         EligibilityQuery eligibilityQuery = rosettaObjectMapper.readValue(securityQueryJson, eligibilityQueryObject.getClass());
 
-        //String icmarepoexecutionfuncinputJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(betest);
 
-        //EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
-
-
+        String eligibilityQueryJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(eligibilityQuery);
+        this.publicSecurityQuery = eligibilityQueryJson;
         this.eligibleCollateralSpecification = bt.createEligibleCollateralSpecification(tep);
 
         java.util.List<CurrencyCodeEnum> currencyCodes =  this.eligibleCollateralSpecification.getCriteria().get(0).getAsset().get(0).getDenominatedCurrency();

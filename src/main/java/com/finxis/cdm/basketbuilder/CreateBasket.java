@@ -29,6 +29,7 @@ import cdm.product.template.Basket;
 import cdm.product.template.BasketConstituent;
 import cdm.product.template.EconomicTerms;
 import cdm.product.template.Product;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.finxis.cdm.basketbuilder.ui.BasketEntryPanel;
 import com.finxis.cdm.basketbuilder.util.*;
 import com.finxis.cdm.basketbuilder.util.CdmEnumMap;
@@ -97,7 +98,7 @@ public class CreateBasket {
 
     }
 
-    public List<EligibleCollateralCriteria> createEligibleCollateralCriteria(BasketEntryPanel bep){
+    public List<EligibleCollateralCriteria> createEligibleCollateralCriteria(BasketEntryPanel bep) throws IOException {
 
         //Enum Mapping
         CdmEnumMap map = new CdmEnumMap();
@@ -171,6 +172,18 @@ public class CreateBasket {
                         ))))
                 .build();
 
+        IcmaRepoUtil ru = new IcmaRepoUtil();
+
+        DateTimeFormatter eventDateFormat = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String eventDateTime = localDateTime.format(eventDateFormat);
+
+        String  eligibleCollateralSpecificationInstructionJson = RosettaObjectMapper.getNewRosettaObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(eligibleCollateralSpecificationInstruction);
+
+
+        ru.writeEventToFile("eligibility-instruction", eventDateTime, eligibleCollateralSpecificationInstructionJson);
+
+
         Injector injector = Guice.createInjector(new CdmRuntimeModule());
 
         EligibleCollateralCriteria criteriaTest = eligibleCollateralSpecificationInstruction.getCommon();
@@ -187,6 +200,7 @@ public class CreateBasket {
     public EligibilityQuery createEligibilityQuery(BasketEntryPanel bep) throws IOException {
 
         String assetRating = bep.collateralCriteriaAgencyRatingField.getSelectedItem().toString();
+
 
         EligibilityQuery eligibilityQuery = EligibilityQuery.builder()
                 .setMaturity(BigDecimal.valueOf(10.0))

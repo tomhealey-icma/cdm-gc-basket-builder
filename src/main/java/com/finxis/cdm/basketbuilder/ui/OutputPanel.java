@@ -72,13 +72,14 @@ public class OutputPanel extends JPanel implements Observer {
 
         JPanel sysOutPanel = new JPanel(new BorderLayout());
         sysOutPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        sysOutPanel.setSize( 800, 600 );
+        sysOutPanel.setSize( 800, 500 );
 
-        outputArea = new JTextArea(40, 80);
+        outputArea = new JTextArea(20, 80);
         outputArea.setEditable(false);
         scrollPane = new JScrollPane(outputArea);
+        scrollPane.setSize( 800, 600 );
         scrollPane.setViewportView(outputArea);
-        scrollPane.getPreferredSize();
+        //scrollPane.getPreferredSize();
         sysOutPanel.add(scrollPane, BorderLayout.CENTER);
         add(sysOutPanel);
         setVisible(true);
